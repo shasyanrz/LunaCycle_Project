@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LunaCycle - Prediction</title>
+
+  <!-- ✅ Chart.js core -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <!-- ✅ Annotation plugin (Chart.js v3) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.2/dist/chartjs-plugin-annotation.min.js"></script>
+
+  <style>
+    :root{
+      --primary-pink:#d81b60;
+      --active-pink:#ec8cc0;
+      --frame-pink:#e190b8;
+
+      --soft-bg:#fff7fb;
+      --card-border:#eee;
+      --text:#222;
+      --muted:#777;
+      --btn-inactive:#f3e5f5;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      font-family: "Segoe UI", sans-serif;
+      background: #fff;
+      margin:0;
+      padding:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      color:var(--text);
+    }
+
+    .navbar{
+      width:95%;
+      max-width:1200px;
+      background:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 28px;
+      border-radius:0 0 30px 30px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06);
+      z-index:100;
+      gap:16px;
+    }
+    .brand-container{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:240px;
+    }
+    .logo{
+      height:56px;
+      width:auto;
+      border-radius:12px;
+      object-fit:contain;
+      background:#fff;
+    }
+
+    .nav-links{
+      display:flex;
+      gap:12px;
+      background:#fff;
+      padding:8px;
+      border-radius:999px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06);
+    }
+    .nav-btn{
+      text-decoration:none;
+      padding:9px 28px;
+      border-radius:999px;
+      font-size:14px;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+    }
+    .btn-active{ background:var(--active-pink); color:#fff; }
+    .btn-inactive{ background:var(--btn-inactive); color:#4a4a4a; }
+
+    .kicker{
+      margin: 18px 0 6px;
+      font-size:14px;
+      color:#666;
+      text-align:center;
+      width:90%;
+      max-width:1000px;
+    }
+
+    .outer-frame{
+      background:var(--frame-pink);
+      width:90%;
+      max-width:1000px;
+      border-radius:40px 40px 0 0;
+      padding:30px;
+      margin-top:10px;
+    }
+    .inner-content{
+      background:#fff;
+      border-radius:30px;
+      padding:28px;
+      box-shadow:0 10px 26px rgba(0,0,0,0.12);
+    }
+
+    .prediction-title{
+      text-align:center;
+      color:var(--primary-pink);
+      font-size:24px;
+      margin:0 0 18px 0;
+      font-weight:900;
+    }
+
+    .top-grid{
+      display:grid;
+      grid-template-columns: 0.95fr 1.25fr;
+      gap:20px;
+      align-items:start;
+      margin-bottom:18px;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--card-border);
+      border-radius:20px;
+      padding:18px;
+    }
+    .card h3{
+      margin:0 0 10px 0;
+      color:var(--primary-pink);
+      font-size:22px;
+      font-weight:900;
+    }
+
+    .form-group{ margin-bottom:14px; }
+    label{
+      display:block;
+      font-size:13px;
+      color:#222;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:10px;
+      border:1px solid #dcdcdc;
+      outline:none;
+      font-size:14px;
+      background:#fff;
+    }
+    input:focus{
+      border-color:#d78bb3;
+      box-shadow:0 0 0 3px rgba(236,140,192,0.18);
+    }
+    .row-2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    .hint{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+    .bmi-preview{
+      margin-top:10px;
+      background: var(--soft-bg);
+      border: 1px dashed #e6b9d0;
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:12px;
+      color:#5b2a46;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .bmi-preview b{ color: var(--primary-pink); }
+
+    .right-col{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .chart-title{
+      margin:0 0 10px 0;
+      font-size:14px;
+      font-weight:900;
+      color:#222;
+    }
+
+    .chart-wrap{
+      background:#fff;
+      border:1px solid var(--card-border);
+      border-radius:20px;
+      padding:16px;
+      height: 280px;
+    }
+    .chart-wrap.hormone { height: 360px; }
+
+    .chart-wrap canvas{
+      width:100% !important;
+      height:100% !important;
+    }
+
+    .eval-card{
+      background:#fdf2f7;
+      border-radius:20px;
+      padding:18px;
+      border:1px solid rgba(216,27,96,0.08);
+      margin-top:18px;
+    }
+    .eval-card h4{
+      margin:0 0 10px 0;
+      font-size:16px;
+      font-weight:900;
+    }
+    .eval-acc{
+      margin:0;
+      color:var(--primary-pink);
+      font-size:40px;
+      font-weight:900;
+      line-height:1;
+    }
+    .validated{
+      display:inline-block;
+      margin-top:8px;
+      background:#e8f5e9;
+      color:#2e7d32;
+      padding:4px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .ai-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:16px;
+    }
+    .btn-predict{
+      background:#c2185b;
+      color:white;
+      border:none;
+      padding:12px 22px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:900;
+      box-shadow:0 10px 20px rgba(194,24,91,0.18);
+    }
+    .btn-predict:disabled{
+      opacity:0.65;
+      cursor:not-allowed;
+    }
+
+    @media (max-width: 920px){
+      .top-grid{ grid-template-columns: 1fr; }
+      .navbar{ padding:12px 16px; flex-wrap:wrap; }
+      .brand-container{ min-width:auto; }
+      .nav-btn{ padding:9px 18px; }
+      .nav-links{ width:100%; justify-content:center; }
+      .ai-score-grid{ grid-template-columns:1fr !important; }
+      .ai-risk-grid{ grid-template-columns:1fr !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="brand-container">
+      <img src="assets/logo.png" alt="Logo" class="logo" />
+    </div>
+
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn btn-inactive">Home</a>
+      <a href="lunacycle.html" class="nav-btn btn-active">LunaCycle</a>
+      <a href="chatbot.html" class="nav-btn btn-inactive">Chatbot</a>
+    </div>
+  </nav>
+
+  <div class="kicker">
+    Track your phase menstrual cycle and get personalized fertility predictions.
+  </div>
+
+  <div class="outer-frame">
+    <div class="inner-content">
+      <div class="prediction-title">🌙 Lunacycle Prediction 🌸</div>
+
+      <div class="top-grid">
+        <!-- INPUT LEFT -->
+        <div class="card">
+          <h3>Health Data Collection</h3>
+
+          <div class="form-group">
+            <label for="lastPrev">Last month start period</label>
+            <input id="lastPrev" type="date" />
+          </div>
+
+          <div class="form-group">
+            <label for="lastCurr">This month start period</label>
+            <input id="lastCurr" type="date" />
+          </div>
+
+          <div class="form-group">
+            <label for="todayDate">Today’s Date</label>
+            <input id="todayDate" type="date" />
+            <div class="hint">Optional. Jika kosong, backend pakai tanggal hari ini.</div>
+          </div>
+
+          <div class="section-label" style="font-weight:900; margin-top:10px;">Biometrics</div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label for="weightKg">Weight (kg)</label>
+              <input id="weightKg" type="number" inputmode="decimal" placeholder="e.g. 55" min="25" max="200" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label for="heightCm">Height (cm)</label>
+              <input id="heightCm" type="number" inputmode="decimal" placeholder="e.g. 160" min="120" max="220" step="0.1" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input id="age" type="number" placeholder="e.g. 22" min="12" max="60" step="1" />
+          </div>
+
+          <div class="bmi-preview">
+            <span>Computed BMI:</span>
+            <b id="bmiOut">—</b>
+          </div>
+
+          <div class="ai-head">
+            <div style="font-weight:900;">Start AI Analysis</div>
+            <button class="btn-predict" id="btnPredict">Start</button>
+          </div>
+
+          <div class="hint" id="metaOut"></div>
+          <div class="hint" id="predictWarn" style="color:#c2185b; font-weight:800;"></div>
+        </div>
+
+        <!-- RIGHT: TIMELINE + HORMONES -->
+        <div class="right-col">
+          <div class="chart-wrap">
+            <div class="chart-title" id="timelineTitle">Cycle Timeline - Current Phase: —</div>
+            <canvas id="timelineChart"></canvas>
+          </div>
+
+          <div class="chart-wrap hormone">
+            <div class="chart-title">📈 Predicted Hormone Levels</div>
+            <canvas id="hormoneChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="eval-card">
+        <h4>🎯 Model Evaluation</h4>
+        <div style="font-size:13px; color:#444; margin-bottom:6px; font-weight:800;">
+          Prediction Accuracy
+        </div>
+        <div class="eval-acc">94.76%</div>
+        <span class="validated">↑ Validated</span>
+
+        <div class="hint" style="margin-top:8px;">
+          Model: SGD_Polynomial_Upgraded • Last trained: 2025-12-28
+        </div>
+      </div>
+
+      <!-- ✅ AI INSIGHT (Generate) -->
+      <div class="card" style="margin-top:18px;">
+        <div class="ai-head" style="margin-top:0;">
+          <h3 style="margin:0; color:var(--primary-pink); font-size:20px; font-weight:900;">AI Insight</h3>
+          <button class="btn-predict" id="btnInsight" disabled>Generate</button>
+        </div>
+
+        <div class="hint" style="margin-top:-4px;">
+          Summary berdasarkan fase siklus & pola hormon (LLM via backend). Klik <b>Start</b> untuk ambil data prediksi.
+        </div>
+
+        <div class="hint" id="insightStatus" style="font-weight:800;"></div>
+
+        <div class="ai-score-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px;">
+          <div style="background:#fff9c4; padding:18px; border-radius:16px; border:1px solid rgba(0,0,0,0.06);">
+            <h5 style="margin:0; font-size:13px; font-weight:900; color:#827717;">Overall Health Score</h5>
+            <h2 style="margin:6px 0 4px; font-weight:900; color:#5b4b00;" id="overallScore">—</h2>
+            <p style="margin:0; font-size:11px; color:#555;">General physiological readiness</p>
+          </div>
+
+          <div style="background:#f1f8e9; padding:18px; border-radius:16px; border:1px solid rgba(0,0,0,0.06);">
+            <h5 style="margin:0; font-size:13px; font-weight:900; color:#33691e;">Fertility Health Score</h5>
+            <h2 style="margin:6px 0 4px; font-weight:900; color:#1f3f10;" id="fertilityScore">—</h2>
+            <p style="margin:0; font-size:11px; color:#555;">Fertility window & cycle stability</p>
+          </div>
+        </div>
+
+        <div style="margin:16px 0 10px; font-size:14px; font-weight:900; color:#222;">
+          AI Rationale
+        </div>
+        <div id="aiRationale"
+             style="background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:12px; font-size:12px; color:#444; line-height:1.6;">
+          —
+        </div>
+
+        <div style="margin:16px 0 10px; font-size:14px; font-weight:900; color:#222;">
+          Risk Assessment
+        </div>
+
+        <div class="ai-risk-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+          <div style="border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.06); font-size:12px; background:#fff1f1;">
+            <div style="font-weight:900; margin:0 0 6px; font-size:13px;">High Risk</div>
+            <div id="riskHigh">—</div>
+          </div>
+          <div style="border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.06); font-size:12px; background:#fff8e1;">
+            <div style="font-weight:900; margin:0 0 6px; font-size:13px;">Medium Risk</div>
+            <div id="riskMed">—</div>
+          </div>
+          <div style="border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.06); font-size:12px; background:#eefaf2;">
+            <div style="font-weight:900; margin:0 0 6px; font-size:13px;">Low Risk</div>
+            <div id="riskLow">—</div>
+          </div>
+        </div>
+
+        <div style="margin:16px 0 10px; font-size:14px; font-weight:900; color:#222;">
+          Health Strengths
+        </div>
+
+        <ul id="strengths"
+            style="margin:0; padding-left:18px; color:#444; font-size:12px; line-height:1.6;
+                  background:#eefaf2; border:1px solid rgba(46,125,50,0.18); border-radius:14px;
+                  padding:12px 14px 12px 28px;">
+          <li>—</li>
+        </ul>
+
+        <div class="hint" style="margin-top:10px;">
+          Disclaimer: AI ini bersifat edukatif, bukan diagnosis medis.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ✅ register annotation plugin
+    if (window.ChartAnnotation) {
+      Chart.register(window.ChartAnnotation);
+    }
+
+    const API_BASE = "http://127.0.0.1:8000";
+
+    let timelineChart = null;
+    let hormoneChart = null;
+
+    // Store latest prediction for AI Insight context
+    let latestPrediction = null;
+
+    // BMI preview
+    function updateBMI() {
+      const w = parseFloat(document.getElementById("weightKg").value);
+      const h = parseFloat(document.getElementById("heightCm").value);
+      if (!w || !h) {
+        document.getElementById("bmiOut").innerText = "—";
+        return;
+      }
+      const bmi = w / ((h/100) ** 2);
+      document.getElementById("bmiOut").innerText = bmi.toFixed(2);
+    }
+    document.getElementById("weightKg").addEventListener("input", updateBMI);
+    document.getElementById("heightCm").addEventListener("input", updateBMI);
+
+    function toFiniteArray(arr) {
+      return (arr || []).map(v => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      });
+    }
+    function finiteOnly(arr) {
+      return (arr || []).map(Number).filter(n => Number.isFinite(n));
+    }
+
+    function getHormoneYRange(h) {
+      const e2  = finiteOnly(h?.e2);
+      const p4  = finiteOnly(h?.p4).map(v => v * 10);
+      const lh  = finiteOnly(h?.lh);
+      const fsh = finiteOnly(h?.fsh);
+
+      const all = [...e2, ...p4, ...lh, ...fsh];
+      if (all.length === 0) return { yMin: 0, yMax: 1 };
+
+      const mn = Math.min(...all);
+      const mx = Math.max(...all);
+      const pad = (mx - mn) * 0.08 || 5;
+      return { yMin: mn - pad, yMax: mx + pad };
+    }
+
+    const PHASE_COLORS = {
+      menstrual: "#f8cdd0",
+      follicular: "#fff2cc",
+      ovulation: "#d9f2d9",
+      luteal: "#dde8f7"
+    };
+
+    function hexToRgba(hex, alpha) {
+      const h = hex.replace("#", "");
+      const bigint = parseInt(h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function phaseBoxesTimeline(pr) {
+      const box = (xMin, xMax, hex) => ({
+        type: "box",
+        xMin, xMax,
+        yScaleID: "y",
+        yMin: 0,
+        yMax: 1,
+        backgroundColor: hexToRgba(hex, 0.35),
+        borderWidth: 0
+      });
+
+      return {
+        menstrual:  box(pr.menstrual[0],  pr.menstrual[1],  PHASE_COLORS.menstrual),
+        follicular: box(pr.follicular[0], pr.follicular[1], PHASE_COLORS.follicular),
+        ovulation:  box(pr.ovulation[0],  pr.ovulation[1],  PHASE_COLORS.ovulation),
+        luteal:     box(pr.luteal[0],     pr.luteal[1],     PHASE_COLORS.luteal)
+      };
+    }
+
+    function phaseBoxesHormone(pr, yMin, yMax) {
+      const box = (xMin, xMax, hex) => ({
+        type: "box",
+        xMin, xMax,
+        yScaleID: "y",
+        yMin, yMax,
+        backgroundColor: hexToRgba(hex, 0.28),
+        borderWidth: 0
+      });
+
+      return {
+        menstrual:  box(pr.menstrual[0],  pr.menstrual[1],  PHASE_COLORS.menstrual),
+        follicular: box(pr.follicular[0], pr.follicular[1], PHASE_COLORS.follicular),
+        ovulation:  box(pr.ovulation[0],  pr.ovulation[1],  PHASE_COLORS.ovulation),
+        luteal:     box(pr.luteal[0],     pr.luteal[1],     PHASE_COLORS.luteal)
+      };
+    }
+
+
+    function renderCharts(data) {
+      if (timelineChart) timelineChart.destroy();
+      if (hormoneChart) hormoneChart.destroy();
+
+      document.getElementById("timelineTitle").innerText =
+        `Cycle Timeline - Current Phase: ${data.current_phase}`;
+
+      const days = data.days;
+
+      timelineChart = new Chart(document.getElementById("timelineChart"), {
+        type: "line",
+        data: {
+          labels: days,
+          datasets: [{
+            label: "Ovulation Probability",
+            data: toFiniteArray(data.ovulation_prob),
+            borderColor: "#1976d2",
+            borderWidth: 3,
+            pointRadius: 0,
+            tension: 0.35,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true },
+            annotation: {
+              annotations: {
+                ...phaseBoxesTimeline(data.phase_ranges),
+                todayLine: {
+                  type: "line",
+                  xMin: data.today_day, xMax: data.today_day,
+                  borderColor: "black",
+                  borderWidth: 2,
+                  borderDash: [4,4],
+                  label: {
+                    display: true,
+                    content: `Today (Day ${data.today_day})`,
+                    position: "start",
+                    backgroundColor: "rgba(0,0,0,0.80)",
+                    color: "white",
+                    padding: 6,
+                    borderRadius: 8
+                  }
+                },
+                ovuLine: {
+                  type: "line",
+                  xMin: data.ovulation_day, xMax: data.ovulation_day,
+                  borderColor: "red",
+                  borderWidth: 2,
+                  borderDash: [6,4],
+                  label: {
+                    display: true,
+                    content: "Ovulation Est.",
+                    position: "start",
+                    backgroundColor: "rgba(0,0,0,0.80)",
+                    color: "white",
+                    padding: 6,
+                    borderRadius: 8
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, suggestedMax: 1 },
+            x: { title: { display: true, text: "Day in Cycle" } }
+          }
+        }
+      });
+
+      const e2  = toFiniteArray(data.hormones?.e2);
+      const p4  = toFiniteArray(data.hormones?.p4).map(v => v == null ? null : v * 10);
+      const lh  = toFiniteArray(data.hormones?.lh);
+      const fsh = toFiniteArray(data.hormones?.fsh);
+
+      const yr = getHormoneYRange(data.hormones);
+
+      hormoneChart = new Chart(document.getElementById("hormoneChart"), {
+        type: "line",
+        data: {
+          labels: days,
+          datasets: [
+            { label: "Estrogen (pg/mL)", data: e2, borderColor: "#ff00a8", borderWidth: 3, pointRadius: 0, tension: 0.35 },
+            { label: "Progesterone (ng/mL) [Scaled x10]", data: p4, borderColor: "#ff7a00", borderWidth: 3, pointRadius: 0, tension: 0.35 },
+            { label: "LH (mIU/mL)", data: lh, borderColor: "#7b1fa2", borderWidth: 2, borderDash: [6,4], pointRadius: 0, tension: 0.25 },
+            { label: "FSH (mIU/mL)", data: fsh, borderColor: "#2e7d32",borderWidth: 2, borderDash: [3,3], pointRadius: 0, tension: 0.25 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "right" },
+            annotation: {
+              annotations: {
+                ...phaseBoxesHormone(data.phase_ranges, yr.yMin, yr.yMax),
+                todayLine: {
+                  type: "line",
+                  xMin: data.today_day, xMax: data.today_day,
+                  borderColor: "black",
+                  borderWidth: 2,
+                  borderDash: [4,4]
+                },
+                ovuLine: {
+                  type: "line",
+                  xMin: data.ovulation_day, xMax: data.ovulation_day,
+                  borderColor: "red",
+                  borderWidth: 2,
+                  borderDash: [6,4]
+                }
+              }
+            }
+          },
+          scales: {
+            y: { min: yr.yMin, max: yr.yMax, beginAtZero: false },
+            x: { title: { display: true, text: "Hari dalam Siklus" } }
+          }
+        }
+      });
+    }
+
+    function setInsightEnabled(enabled, note="") {
+      const b = document.getElementById("btnInsight");
+      b.disabled = !enabled;
+      document.getElementById("insightStatus").innerText = note || "";
+    }
+
+    function resetInsightUI() {
+      document.getElementById("overallScore").innerText = "—";
+      document.getElementById("fertilityScore").innerText = "—";
+      document.getElementById("aiRationale").innerText = "—";
+      document.getElementById("riskHigh").innerText = "—";
+      document.getElementById("riskMed").innerText = "—";
+      document.getElementById("riskLow").innerText = "—";
+      document.getElementById("strengths").innerHTML = "<li>—</li>";
+    }
+
+    // ---- PREDICT (FIXED STRUCTURE)
+    document.getElementById("btnPredict").addEventListener("click", async () => {
+      const btn = document.getElementById("btnPredict");
+      document.getElementById("predictWarn").innerText = "";
+
+      const payload = {
+        last_period_prev: document.getElementById("lastPrev").value,
+        last_period_curr: document.getElementById("lastCurr").value,
+        today_date: document.getElementById("todayDate").value || null,
+        age: parseInt(document.getElementById("age").value) || 24,
+        weight: parseFloat(document.getElementById("weightKg").value) || 55,
+        height: parseFloat(document.getElementById("heightCm").value) || 160
+      };
+
+      if (!payload.last_period_prev || !payload.last_period_curr) {
+        alert("Mohon lengkapi tanggal haid bulan lalu & bulan ini!");
+        return;
+      }
+
+      let data = null;
+
+      try {
+        btn.innerText = "Analyzing...";
+        btn.disabled = true;
+        setInsightEnabled(false, "Menunggu hasil prediksi...");
+
+        const res = await fetch(`${API_BASE}/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        data = await res.json();
+        if (data.error) {
+          alert("Error: " + data.error);
+          setInsightEnabled(false, "Predict error.");
+          return;
+        }
+
+        latestPrediction = data; // ✅ save for AI Insight
+        resetInsightUI();
+
+        // ✅ update UI
+        document.getElementById("bmiOut").innerText = Number(data.bmi).toFixed(2);
+        document.getElementById("metaOut").innerText =
+          `Cycle length: ${data.cycle_length} days | Period length: ${data.period_length} days | Today day: ${data.today_day} | Ovulation est: Day ${data.ovulation_day}`;
+
+        renderCharts(data);
+
+        // ✅ SIMPAN CONTEXT SETELAH ADA data
+        const ctx = {
+          cycle_length: data.cycle_length,
+          today_day: data.today_day,
+          current_phase: data.current_phase,
+          ovulation_day: data.ovulation_day,
+          period_length: data.period_length,
+          bmi: Number(data.bmi),
+          age: payload.age
+        };
+        localStorage.setItem("lunacycle_context", JSON.stringify(ctx));
+
+        setInsightEnabled(true, "Prediksi siap. Klik Generate untuk AI Insight.");
+      } catch (e) {
+        console.error(e);
+        alert("Gagal koneksi ke server. Pastikan backend server.py sudah jalan di port 8000.");
+        setInsightEnabled(false, "Backend tidak terhubung.");
+      } finally {
+        btn.innerText = "Start";
+        btn.disabled = false;
+      }
+    });
+
+    // ---- AI INSIGHT
+    document.getElementById("btnInsight").addEventListener("click", async () => {
+      const btn = document.getElementById("btnInsight");
+
+      if (!latestPrediction) {
+        document.getElementById("predictWarn").innerText = "Klik Start dulu untuk generate prediksi.";
+        return;
+      }
+
+      const cycleLen = latestPrediction.cycle_length;
+      const isIrregular = (cycleLen > 35 || cycleLen < 21);
+
+      const req = {
+        cycle_length: latestPrediction.cycle_length,
+        today_day: latestPrediction.today_day,
+        current_phase: latestPrediction.current_phase,
+        age: latestPrediction.age ?? (parseInt(document.getElementById("age").value) || 24),
+        bmi: Number(latestPrediction.bmi) || 0,
+        is_irregular: isIrregular
+      };
+
+      try {
+        btn.innerText = "Generating...";
+        btn.disabled = true;
+        document.getElementById("insightStatus").innerText = "AI sedang menganalisis...";
+
+        const res = await fetch(`${API_BASE}/ai/insight`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(req)
+        });
+
+        const data = await res.json();
+        if (data.error) {
+          alert("AI Insight error: " + data.error);
+          document.getElementById("insightStatus").innerText = "Gagal generate AI Insight.";
+          return;
+        }
+
+        document.getElementById("overallScore").innerText = `${data.health_score}/100`;
+        document.getElementById("fertilityScore").innerText = `${data.fertility_score}/100`;
+        document.getElementById("aiRationale").innerText = data.rationale || "—";
+
+        const high = [];
+        const med = [];
+        const low = [];
+
+        if (req.is_irregular) med.push("Siklus cenderung tidak teratur (di luar rentang 21–35 hari).");
+        if (req.bmi < 18.5) med.push("BMI rendah bisa memengaruhi keseimbangan hormon & ovulasi.");
+        if (req.bmi >= 30) med.push("BMI tinggi bisa terkait gangguan ovulasi pada sebagian orang.");
+        if (req.today_day >= (latestPrediction.ovulation_day - 2) && req.today_day <= (latestPrediction.ovulation_day + 2)) {
+          low.push("Kamu berada dekat jendela ovulasi, ini periode fertilitas lebih tinggi.");
+        }
+
+        document.getElementById("riskHigh").innerText = high.length ? high.join(" ") : "No high risks identified";
+        document.getElementById("riskMed").innerText = med.length ? med.join(" ") : "No medium risks identified";
+        document.getElementById("riskLow").innerText = low.length ? low.join(" ") : "No low risks identified";
+
+        const strengths = [];
+        strengths.push(`Fase saat ini: ${req.current_phase}.`);
+        strengths.push("Kamu sudah melakukan tracking siklus (ini bagus untuk prediksi yang makin akurat).");
+        document.getElementById("strengths").innerHTML = strengths.map(s => `<li>${s}</li>`).join("");
+
+        document.getElementById("insightStatus").innerText = "AI Insight berhasil dibuat ✅";
+      } catch (e) {
+        console.error(e);
+        alert("Gagal memanggil AI Insight. Pastikan backend & API key sudah benar.");
+        document.getElementById("insightStatus").innerText = "Backend/AI tidak terhubung.";
+      } finally {
+        btn.innerText = "Generate";
+        btn.disabled = false;
+      }
+    });
+
+    // ---- Prepared function for chatbot page (chatbot.html will use this)
+    async function callChatAPI(messages, context) {
+      const res = await fetch(`${API_BASE}/ai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages, context })
+      });
+      return await res.json(); // {reply: "..."}
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

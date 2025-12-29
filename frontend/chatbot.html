@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LunaCycle - Chatbot</title>
+
+  <style>
+    :root{
+      --primary-pink:#d81b60;
+      --active-pink:#ec8cc0;
+      --frame-pink:#e190b8;
+
+      --soft-bg:#fff7fb;
+      --card-border:#eee;
+      --text:#222;
+      --muted:#777;
+      --btn-inactive:#f3e5f5;
+
+      --bubble:#fde8f4;
+      --bubble-2:#f7eefb;
+      --shadow: 0 10px 26px rgba(0,0,0,0.12);
+      --shadow-soft: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      font-family: "Segoe UI", sans-serif;
+      background:#fff;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      color:var(--text);
+    }
+
+    .navbar{
+      width:95%;
+      max-width:1200px;
+      background:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 28px;
+      border-radius:0 0 30px 30px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06);
+      z-index:100;
+      gap:16px;
+    }
+    .brand-container{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:240px;
+    }
+    .logo{
+      height:56px;
+      width:auto;
+      border-radius:12px;
+      object-fit:contain;
+      background:#fff;
+    }
+
+    .nav-links{
+      display:flex;
+      gap:12px;
+      background:#fff;
+      padding:8px;
+      border-radius:999px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06);
+    }
+    .nav-btn{
+      text-decoration:none;
+      padding:9px 28px;
+      border-radius:999px;
+      font-size:14px;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+    }
+    .btn-active{ background:var(--active-pink); color:#fff; }
+    .btn-inactive{ background:var(--btn-inactive); color:#4a4a4a; }
+
+    .kicker{
+      margin: 18px 0 6px;
+      font-size:14px;
+      color:#666;
+      text-align:center;
+      width:90%;
+      max-width:1000px;
+    }
+
+    .outer-frame{
+      background:var(--frame-pink);
+      width:90%;
+      max-width:1000px;
+      border-radius:40px 40px 0 0;
+      padding:30px;
+      margin-top:10px;
+      min-height:100vh;
+    }
+    .inner-content{
+      background:#fff;
+      border-radius:30px;
+      padding:28px;
+      box-shadow: var(--shadow);
+    }
+
+    .chat-frame{
+      max-width: 720px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, rgba(255,255,255,0.80), rgba(255,255,255,0.96));
+      border-radius: 26px;
+      padding: 22px;
+    }
+
+    .chat-box{
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 18px;
+      padding: 16px;
+      height: 420px;
+      overflow:auto;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.06);
+    }
+
+    .msg{
+      display:flex;
+      gap:10px;
+      margin: 10px 0;
+      align-items:flex-start;
+    }
+
+    .avatar{
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(236,140,192,0.40);
+      background:#fff;
+      flex: 0 0 auto;
+    }
+
+    .bubble{
+      max-width: 78%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+      line-height: 1.55;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+      white-space: pre-wrap;
+    }
+
+    .bot .bubble{
+      background: var(--bubble);
+      border-top-left-radius: 10px;
+    }
+    .user{
+      justify-content: flex-end;
+    }
+    .user .bubble{
+      background: var(--bubble-2);
+      border-top-right-radius: 10px;
+    }
+    .user .avatar{ order: 2; }
+    .user .bubble{ order: 1; }
+
+    .meta{
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .chat-input{
+      display:flex;
+      gap:10px;
+      margin-top: 12px;
+      align-items:center;
+    }
+    .chat-input input{
+      flex:1;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid #dcdcdc;
+      outline:none;
+      font-size: 14px;
+      background:#fff;
+    }
+    .chat-input input:focus{
+      border-color:#d78bb3;
+      box-shadow:0 0 0 3px rgba(236,140,192,0.18);
+    }
+    .chat-input button{
+      padding: 12px 16px;
+      border: none;
+      border-radius: 12px;
+      background: #c2185b;
+      color: #fff;
+      font-weight: 900;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(194,24,91,0.18);
+    }
+    .chat-input button:disabled{
+      opacity: 0.65;
+      cursor:not-allowed;
+      transform:none !important;
+    }
+
+    .info-pill{
+      margin-top: 10px;
+      font-size: 12px;
+      color: #444;
+      background: #fff7fb;
+      border: 1px dashed rgba(216,27,96,0.25);
+      padding: 10px 12px;
+      border-radius: 14px;
+    }
+    .info-pill b{ color: var(--primary-pink); }
+
+    @media (max-width: 920px){
+      .navbar{ padding:12px 16px; flex-wrap:wrap; }
+      .brand-container{ min-width:auto; }
+      .nav-btn{ padding:9px 18px; }
+      .nav-links{ width:100%; justify-content:center; }
+      .chat-box{ height: 380px; }
+      .bubble{ max-width: 88%; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="brand-container">
+      <img src="assets/logo.png" alt="Logo" class="logo" />
+    </div>
+
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn btn-inactive">Home</a>
+      <a href="lunacycle.html" class="nav-btn btn-inactive">LunaCycle</a>
+      <a href="chatbot.html" class="nav-btn btn-active">Chatbot</a>
+    </div>
+  </nav>
+
+  <div class="kicker">
+    Ask anything about your cycle — symptoms, phase, fertile window, or hormone patterns.
+  </div>
+
+  <div class="outer-frame">
+    <div class="inner-content">
+
+      <div class="chat-frame">
+        <div class="chat-box" id="chatBox"></div>
+
+        <div class="chat-input">
+          <input id="chatInput" type="text" placeholder="Tulis pesan..." />
+          <button id="sendBtn">Kirim</button>
+        </div>
+
+        <div class="info-pill" id="ctxInfo"></div>
+
+        <div class="meta" style="margin-top:10px;">
+          Disclaimer: This chatbot is educational and not medical advice.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    const chatBox = document.getElementById("chatBox");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const ctxInfo = document.getElementById("ctxInfo");
+
+    // ====== state: chat history untuk dikirim ke backend ======
+    // format OpenAI/OpenRouter: {role:"user"|"assistant", content:"..."}
+    const chatHistory = [];
+
+    // ====== ambil context dari localStorage (dibuat oleh lunacycle.html setelah Start) ======
+    function loadContext() {
+      try {
+        const raw = localStorage.getItem("lunacycle_context");
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    let context = loadContext();
+
+    function renderContextInfo() {
+      if (!context) {
+        ctxInfo.innerHTML = `⚠️ Belum ada data prediksi. Buka <b>LunaCycle</b> → klik <b>Start</b> dulu supaya chatbot punya konteks.`;
+        return;
+      }
+      ctxInfo.innerHTML =
+        `Context: siklus <b>${context.cycle_length}</b> hari, hari ke-<b>${context.today_day}</b>, fase <b>${context.current_phase}</b>, ovulasi est. hari <b>${context.ovulation_day}</b>.`;
+    }
+
+    function escapeHTML(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    function appendMessage(role, text){
+      const wrap = document.createElement("div");
+      wrap.className = `msg ${role}`;
+
+      const avatar = document.createElement("img");
+      avatar.className = "avatar";
+      avatar.src = role === "user" ? "assets/user.png" : "assets/chatbot.png";
+      avatar.alt = role + " avatar";
+
+      const bubbleWrap = document.createElement("div");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = escapeHTML(text); // aman, no HTML injection
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = role === "user" ? "You" : "Chatbot Replies";
+
+      bubbleWrap.appendChild(bubble);
+      bubbleWrap.appendChild(meta);
+
+      wrap.appendChild(avatar);
+      wrap.appendChild(bubbleWrap);
+
+      chatBox.appendChild(wrap);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      return bubble; // return bubble node kalau mau update (typing)
+    }
+
+    function setBusy(isBusy){
+      sendBtn.disabled = isBusy;
+      chatInput.disabled = isBusy;
+      sendBtn.textContent = isBusy ? "..." : "Kirim";
+    }
+
+    // ====== panggil backend /ai/chat ======
+    async function callChatAPI(){
+      const payload = {
+        messages: chatHistory,
+        context: context || {}
+      };
+
+      const res = await fetch(`${API_BASE}/ai/chat`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (data?.reply == null) {
+        throw new Error(data?.error || "Invalid response from server");
+      }
+      return String(data.reply);
+    }
+
+    async function handleSend(){
+      const text = chatInput.value.trim();
+      if(!text) return;
+
+      // push user message to UI and history
+      appendMessage("user", text);
+      chatHistory.push({ role: "user", content: text });
+      chatInput.value = "";
+
+      // typing indicator
+      setBusy(true);
+      const typingBubble = appendMessage("bot", "LunaBot sedang mengetik...");
+
+      try {
+        // refresh context each send (kalau user baru buka lunacycle lalu balik)
+        context = loadContext() || context;
+        renderContextInfo();
+
+        const reply = await callChatAPI();
+
+        // update typing bubble
+        typingBubble.innerHTML = escapeHTML(reply);
+
+        chatHistory.push({ role: "assistant", content: reply });
+
+      } catch (e) {
+        console.error(e);
+        typingBubble.innerHTML = escapeHTML(
+          "Maaf, aku gagal terhubung ke AI.\n" +
+          "Cek:\n" +
+          "1) Backend server.py sudah jalan di port 8000\n" +
+          "2) OPENROUTER_API_KEY sudah benar\n" +
+          "3) Tidak ada error di terminal uvicorn\n\n" +
+          "Detail: " + (e?.message || String(e))
+        );
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // ====== init ======
+    function init(){
+      renderContextInfo();
+
+      // initial bot greeting
+      const greet = context
+        ? `Halo! Aku LunaBot 🤖🌙\nAku lihat kamu lagi fase ${context.current_phase} (hari ke-${context.today_day}).\nApa yang mau kamu tanyakan?`
+        : "Halo! Aku LunaBot 🤖🌙\nBuka halaman LunaCycle dan klik Start dulu supaya aku punya konteks prediksi ya.\nSambil itu, kamu bisa cerita gejala hari ini.";
+
+      appendMessage("bot", greet);
+      chatHistory.push({ role: "assistant", content: greet });
+
+      sendBtn.addEventListener("click", handleSend);
+      chatInput.addEventListener("keydown", (e) => {
+        if(e.key === "Enter") handleSend();
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

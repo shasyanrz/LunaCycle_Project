@@ -1,0 +1,1 @@
+{"model_name": "SGD_Polynomial_Upgraded", "test_accuracy": 95.36, "last_trained": "2025-12-28 12:44:48", "features_used": ["cycle_length", "period_length", "age", "bmi", "day_sin", "day_cos", "rel_day", "days_to_end", "is_late_cycle"]}
