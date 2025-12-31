@@ -29,8 +29,6 @@ Allows users to ask natural language questions about their cycle, with responses
 
 # 🗺️ Repository Structure
 
-## Repository Structure
-
 ```text
 LunaCycle_Project/
 ├── backend/
