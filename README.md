@@ -29,9 +29,12 @@ Allows users to ask natural language questions about their cycle, with responses
 
 # 🗺️ Repository Structure
 
-LunaCycle/
+## Repository Structure
+
+```text
+LunaCycle_Project/
 ├── backend/
-│   ├── models/                # Trained ML model and scaler artifacts
+│   ├── models/                # Trained ML model and scaler
 │   ├── server.py              # FastAPI backend (API, ML inference, LLM handler)
 │   ├── requirements.txt       # Backend dependencies
 │   └── .env                   # Environment variables (ignored in git)
@@ -39,13 +42,15 @@ LunaCycle/
 ├── frontend/
 │   ├── assets/                # Images and icons
 │   ├── css/
-│   │   └── style.css          # Centralized UI styling
+│   │   └── style.css          # Global styling
 │   ├── index.html             # Home page
-│   ├── lunacycle.html         # Prediction & visualization page
-│   └── chatbot.html           # Context-aware chatbot interface
+│   ├── lunacycle.html         # Prediction & visualization
+│   └── chatbot.html           # Context-aware chatbot
 │
 ├── .gitignore
 └── README.md
+```
+
 
 
 
