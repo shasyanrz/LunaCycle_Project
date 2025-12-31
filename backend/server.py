@@ -11,7 +11,7 @@ from datetime import date, datetime
 import numpy as np
 
 # =========================================
-# 0) ENV + AI (boleh sebelum parse_date)
+# 0) ENV + AI 
 # =========================================
 load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
